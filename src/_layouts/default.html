@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% if page.title %}{{ page.title | escape }}{% else %}{{ site.title | escape }}{% endif %}</title>
+
+    <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+
+
+    <link rel="stylesheet" href="/assets/vendor/node_modules/leaflet-overpass-layer/dist/OverPassLayer.css">
+    <link rel="stylesheet" href="/assets/vendor/node_modules/leaflet/dist/leaflet.css">
+
+    <!--[if lte IE 8]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <link rel="stylesheet" type="text/css" href="/assets/css/ie.css">
+    <![endif]-->
+
+    <!--[if gt IE 8]><!--><link rel="stylesheet" type="text/css" href="/assets/css/main.css"><!--<![endif]-->
+
+    <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
+
+    <script type="x-mapbox-access-token">{{ site.mapbox_access_token }}</script>
+</head>
+<body>
+
+    {% include header.html %}
+
+    <main id="main" class="main">
+
+      {{ content }}
+
+    </main>
+
+    <!-- <script src="//code.jquery.com/jquery-1.12.1.min.js" integrity="sha256-I1nTg78tSrZev3kjvfdM5A5Ak/blglGzlaZANLPDl3I=" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery-1.12.1.min.js"><\/script>')</script> -->
+
+    <script src="/assets/vendor/node_modules/leaflet/dist/leaflet.js"></script>
+    <script src="/assets/vendor/node_modules/leaflet-geometryutil/src/leaflet.geometryutil.js"></script>
+    <script src="/assets/vendor/node_modules/leaflet-overpass-layer/dist/OverPassLayer.bundle.js"></script>
+    <script src="/assets/vendor/node_modules/leaflet-routeboxer/src/leaflet-routeboxer.js"></script>
+    <script src="/assets/vendor/src/_vendor/leaflet-gpx-1.2.0/gpx.js"></script>
+
+    <script src="/assets/js/main.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+# Jekyll config
+
+# Site settings
+title: Route POI
+description: Point of interest for (cycle) routes
+baseurl: ""
+url: "http://routepoi.dev/"
+mapbox_access_token: ''
+
+# Build settings
+source: ./
+destination: ../build
+keep_files: ['css', 'js', 'assets']
+markdown: kramdown

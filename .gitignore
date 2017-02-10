@@ -1,0 +1,18 @@
+.DS_Store
+
+# Dependencies
+node_modules/
+bower_components/
+.bundle/
+vendor/
+
+# Jekyll build
+build/
+.sass-cache
+.jekyll-metadata
+
+# Heroku
+.env
+yarn-error.log
+src/_config.yml
+src/_site/*

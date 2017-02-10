@@ -1,0 +1,18 @@
+$base-asset-url: '/assets/';
+
+@import 'coop-toolkit';
+
+.routepoi-logo {
+  @include heading-h2;
+
+  color: $body-copy;
+  text-decoration: none;
+  border-bottom: 0;
+  display: block;
+  text-align: left;
+  font-weight: 300;
+}
+
+.map {
+  height: 530px;
+}
