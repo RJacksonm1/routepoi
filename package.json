@@ -19,7 +19,6 @@
     "jshint-stylish": "^2.1.0",
     "leaflet": "^1.0.3",
     "leaflet-geometryutil": "^0.8.0",
-    "leaflet-overpass-layer": "^2.4.1",
     "leaflet-routeboxer": "^1.0.0"
   },
   "devDependencies": {

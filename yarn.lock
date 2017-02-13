@@ -2148,10 +2148,6 @@ js-base64@^2.1.9:
   version "2.1.9"
   resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-2.1.9.tgz#f0e80ae039a4bd654b5f281fc93f04a914a7fcce"
 
-js-clipper@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/js-clipper/-/js-clipper-1.0.1.tgz#4d6b07434a4408e7c129e32201ce66d21474ed21"
-
 jsbn@~0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.0.tgz#650987da0dd74f4ebf5a11377a2aa2d273e97dfd"
@@ -2240,20 +2236,13 @@ leaflet-geometryutil@^0.8.0:
   dependencies:
     leaflet ">=0.7.0"
 
-leaflet-overpass-layer@^2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/leaflet-overpass-layer/-/leaflet-overpass-layer-2.4.1.tgz#4fefad06cb376ceadd85939445b306c1fa2adc46"
-  dependencies:
-    js-clipper "^1.0.1"
-    leaflet "^1.0.1"
-
 leaflet-routeboxer@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/leaflet-routeboxer/-/leaflet-routeboxer-1.0.0.tgz#803c134ff0738623b9777254252381a398d2cde6"
   dependencies:
     leaflet "^0.7.7"
 
-leaflet@>=0.7.0, leaflet@^1.0.1, leaflet@^1.0.3:
+leaflet@>=0.7.0, leaflet@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.0.3.tgz#1f401b98b45c8192134c6c8d69686253805007c8"
 

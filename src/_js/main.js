@@ -21,6 +21,7 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
     var tileset; // The maps tiles
     var attribution; // Attribution for various data sources
     var mapbox_access_token = document.querySelector('script[type="x-mapbox-access-token"]').text;
+    var pointsOfInterestLayer;
 
     // gpx = '/assets/Big_Bad_Bike_Ride_2016.gpx';
     gpx = '/assets/York_to_Manchester.gpx';
@@ -43,6 +44,8 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
         accessToken: mapbox_access_token
     });
 
+    tileset.addTo(map);
+
     gpx_route = new L.GPX(gpx, {
         async: true,
         marker_options: {
@@ -52,7 +55,8 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
         }
     });
 
-    tileset.addTo(map);
+    pointsOfInterestLayer = new L.LayerGroup();
+    map.addLayer(pointsOfInterestLayer);
 
     gpx_route
         .on('loaded', function(e) {
@@ -66,12 +70,16 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
         findLayerType(gpx_route, L.Polyline, function(layer){
             search_boxes = L.RouteBoxer.box(layer.getLatLngs(), search_radius);
             search_boxes.forEach(drawBoundingBox);
-            // search_boxes.forEach(findPlacesInBoundingBox);
 
-            // We don't want to hammer the OSM Overpass API with lots of
+            // We don't want to hammer our data provider with lots of
             // queries, so load sequentially.
             var i = 0;
-            var boundingBoxLooper = function boundingBoxLooper() {
+            var boundingBoxLooper = function boundingBoxLooper(results) {
+
+                if (results !== undefined) {
+                    renderPointsOfInterest(results.elements);
+                }
+
                 if (i > search_boxes.length - 1) {
                     return;
                 }
@@ -94,6 +102,22 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
     function findPlacesInBoundingBox(box, callback) {
         var bbox = L.LatLngBoundsToBbox(box);
 
+        OverpassDataProvider.fetch(
+            'node["amenity"~"(cafe|fast_food|biergarten|bar|pub)"](' + bbox + ');out;',
+            function(data) {
+                search_boxes_visualisation[bbox].setStyle({
+                    color: '#0c3',
+                    fillOpacity: 0,
+                    weight: 1,
+                });
+
+                callback(data);
+            },
+            function(xhr){
+                console.log('Failed to fetch data, %s', xhr);
+            }
+        );
+
         // TODO: Wrap these queries up in a data provider class, with a
         // caching layer inbetween. This should greatly speed up re-visits to
         // previously checked routes. How long to cache for?
@@ -103,62 +127,34 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
         // query multiple bound boxes but render all to a single layer (this
         // library forces us to a separate layer for each bound box; hell, we
         // even had to extend it to be able to search by boundbox)
-        var opl = new L.OverPassLayer({
-            // query: 'node["amenity"~"(cafe|fast_food|biergarten|bar|pub)"](' + bbox + ');out;',
-            query: 'node[amenity](' + bbox + ');out;',
-            minZoom: 1,
-            onSuccess: function(data) {
+        // var opl = new L.OverPassLayer({
+        //     query: 'node["amenity"~"(cafe|fast_food|biergarten|bar|pub)"](' + bbox + ');out;',
+        //     // query: 'node[amenity](' + bbox + ');out;',
+        //     minZoom: 1,
+        //     onSuccess: function(data) {
 
-                search_boxes_visualisation[bbox].setStyle({
-                    color: '#0c3',
-                    fillOpacity: 0,
-                    weight: 1,
-                });
+        //         if (callback)
+        //             callback(data.elements);
+        //     },
+        // });
 
-                if (callback)
-                    callback();
+        // map.addLayer(opl);
+    }
 
-                for(var i = 0; i < data.elements.length; i++) {
+    // -------------------------------------------------------------------------
 
-                    var pos, popupContent, popup, marker,
-                    e = data.elements[i];
+    function renderPointsOfInterest(pois) {
+        pois.forEach(function(poi) {
 
-                    if ( e.id in this._ids ) {
+            position = new L.LatLng(
+                poi.center ? poi.center.lat : poi.lat,
+                poi.center ? poi.center.lon : poi.lon
+            );
 
-                        continue;
-                    }
 
-                    this._ids[e.id] = true;
-
-                    if ( e.type === 'node' ) {
-
-                        pos = new L.LatLng(e.lat, e.lon);
-                    } else {
-
-                        pos = new L.LatLng(e.center.lat, e.center.lon);
-                    }
-
-                    if (this.options.markerIcon) {
-                        marker = L.marker(pos, { icon: this.options.markerIcon });
-                    }
-                    else {
-                        marker = L.circle(pos, 200, {
-                            'stroke': false,
-                            'fillColor': '#E54041',
-                            'fillOpacity': 0.9,
-                        });
-                    }
-
-                    popupContent = this._getPoiPopupHTML(e.tags, e.id);
-                    popup = L.popup().setContent( popupContent );
-                    marker.bindPopup(popup);
-
-                    this._map.addLayer(marker);
-                }
-            },
+            marker = L.marker(position);
+            marker.addTo(pointsOfInterestLayer);
         });
-
-        map.addLayer(opl);
     }
 
     // -------------------------------------------------------------------------

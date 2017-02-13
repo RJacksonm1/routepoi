@@ -10,7 +10,6 @@ var jshint = require('gulp-jshint');
 var stylish = require('jshint-stylish');
 var uglify = require('gulp-uglify');
 var mocha = require('gulp-mocha');
-var debug = require('gulp-debug');
 
 
 /**
@@ -109,7 +108,7 @@ gulp.task('js', ['lintjs'], function() {
     .pipe(sourcemaps.init())
       .pipe(include())
       .pipe(concat('main.js'))
-      .pipe(uglify())
+      // .pipe(uglify())
     .pipe(sourcemaps.write('maps/'))
     .pipe(gulp.dest(dest_paths.scripts))
     .pipe(connect.reload());
