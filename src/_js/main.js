@@ -23,6 +23,11 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
     var mapbox_access_token = document.querySelector('script[type="x-mapbox-access-token"]').text;
     var pointsOfInterestLayer;
 
+    var poi_data_provider = new localStorageCacheForDataProvider(
+        'overpass_point',
+        new OverpassDataProvider()
+    );
+
     // gpx = '/assets/Big_Bad_Bike_Ride_2016.gpx';
     gpx = '/assets/York_to_Manchester.gpx';
 
@@ -77,6 +82,7 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
             var boundingBoxLooper = function boundingBoxLooper(results) {
 
                 if (results !== undefined) {
+
                     renderPointsOfInterest(results.elements);
                 }
 
@@ -99,24 +105,49 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
 
     // -------------------------------------------------------------------------
 
+    function checkStatus(response) {
+        if (response.status >= 200 && response.status < 300) {
+            return response;
+        } else {
+            var error = new Error(response.statusText);
+            error.response = response;
+            throw error;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
     function findPlacesInBoundingBox(box, callback) {
         var bbox = L.LatLngBoundsToBbox(box);
 
-        OverpassDataProvider.fetch(
-            'node["amenity"~"(cafe|fast_food|biergarten|bar|pub)"](' + bbox + ');out;',
-            function(data) {
+        poi_data_provider
+            .fetch('node["amenity"~"(cafe|fast_food|biergarten|bar|pub)"](' + bbox + ');out;')
+            .then((data) => {
                 search_boxes_visualisation[bbox].setStyle({
                     color: '#0c3',
                     fillOpacity: 0,
                     weight: 1,
                 });
 
-                callback(data);
-            },
-            function(xhr){
-                console.log('Failed to fetch data, %s', xhr);
-            }
-        );
+                return data;
+            })
+            .then(callback)
+            .catch((error) => {
+                console.log('request failed', error)
+            });
+
+            // function(data) {
+                // search_boxes_visualisation[bbox].setStyle({
+                //     color: '#0c3',
+                //     fillOpacity: 0,
+                //     weight: 1,
+                // });
+
+            //     callback(data);
+            // },
+            // function(xhr){
+            //     console.log('Failed to fetch data, %s', xhr);
+            // }
 
         // TODO: Wrap these queries up in a data provider class, with a
         // caching layer inbetween. This should greatly speed up re-visits to
@@ -146,13 +177,13 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
     function renderPointsOfInterest(pois) {
         pois.forEach(function(poi) {
 
-            position = new L.LatLng(
+            let position = new L.LatLng(
                 poi.center ? poi.center.lat : poi.lat,
                 poi.center ? poi.center.lon : poi.lon
             );
 
 
-            marker = L.marker(position);
+            let marker = L.marker(position);
             marker.addTo(pointsOfInterestLayer);
         });
     }

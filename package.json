@@ -3,9 +3,11 @@
   "private": true,
   "dependencies": {
     "@turf/turf": "^3.9.0",
+    "babel-preset-es2015": "^6.22.0",
     "coop-frontend-toolkit": "coopdigital/coop-frontend-toolkit#2.0.0",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^3.1.0",
+    "gulp-babel": "^6.1.2",
     "gulp-concat": "^2.6.0",
     "gulp-connect": "2.3.1",
     "gulp-include": "^2.1.0",
@@ -19,7 +21,8 @@
     "jshint-stylish": "^2.1.0",
     "leaflet": "^1.0.3",
     "leaflet-geometryutil": "^0.8.0",
-    "leaflet-routeboxer": "^1.0.0"
+    "leaflet-routeboxer": "^1.0.0",
+    "whatwg-fetch": "^2.0.2"
   },
   "devDependencies": {
     "gulp-debug": "^3.0.0"

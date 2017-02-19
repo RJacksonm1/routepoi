@@ -1,15 +1,16 @@
-var gulp = require('gulp');
-var scsslint = require('gulp-scss-lint');
-var sass = require('gulp-sass');
 var autoprefixer = require('gulp-autoprefixer');
-var sourcemaps = require('gulp-sourcemaps');
-var connect = require('gulp-connect');
+var babel = require('gulp-babel');
 var concat = require('gulp-concat');
+var connect = require('gulp-connect');
+var gulp = require('gulp');
 var include = require('gulp-include');
 var jshint = require('gulp-jshint');
+var mocha = require('gulp-mocha');
+var sass = require('gulp-sass');
+var scsslint = require('gulp-scss-lint');
+var sourcemaps = require('gulp-sourcemaps');
 var stylish = require('jshint-stylish');
 var uglify = require('gulp-uglify');
-var mocha = require('gulp-mocha');
 
 
 /**
@@ -30,6 +31,7 @@ var src_paths = {
     'node_modules/leaflet-geometryutil/src/leaflet.geometryutil.js',
     'node_modules/leaflet-routeboxer/src/leaflet-routeboxer.js',
     'node_modules/leaflet-overpass-layer/dist/*',
+    'node_modules/whatwg-fetch/fetch.js',
     src + '_vendor/**/*'
   ],
   html: src + '**/*.html'
@@ -106,9 +108,12 @@ gulp.task('css', ['lintscss'], function() {
 gulp.task('js', ['lintjs'], function() {
   gulp.src(src_paths.scripts)
     .pipe(sourcemaps.init())
-      .pipe(include())
-      .pipe(concat('main.js'))
-      // .pipe(uglify())
+    .pipe(include())
+    .pipe(babel({
+      presets: ['es2015']
+    }))
+    .pipe(concat('main.js'))
+    // .pipe(uglify())
     .pipe(sourcemaps.write('maps/'))
     .pipe(gulp.dest(dest_paths.scripts))
     .pipe(connect.reload());
