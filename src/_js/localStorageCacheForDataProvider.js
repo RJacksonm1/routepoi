@@ -3,7 +3,6 @@ class localStorageCacheForDataProvider {
         this.cache_key = cache_key;
         this.cache_time = cache_time || 60 * 60; // seconds. 1hr default.
         this.data_provider = data_provider;
-        this.endpoint = 'https://overpass-api.de/api/';
     }
 
     fetch(query) {
