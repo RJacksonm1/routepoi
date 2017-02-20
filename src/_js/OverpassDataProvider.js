@@ -4,6 +4,8 @@ class OverpassDataProvider {
     }
 
     fetch(query) {
+        // TODO: Return a normalized array of feature objects; eliminate
+        // dependence on vendor-specific data structures.
         return fetch(this.buildOverpassUrl(query));
     }
 

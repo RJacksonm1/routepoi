@@ -25,7 +25,8 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
 
     var poi_data_provider = new localStorageCacheForDataProvider(
         'overpass_point',
-        new OverpassDataProvider()
+        new OverpassDataProvider(), // TODO: Give CycleStreets API a go
+        60 * 60 * 24 // Cache for 24hrs
     );
 
     // gpx = '/assets/Big_Bad_Bike_Ride_2016.gpx';
@@ -60,7 +61,8 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
         }
     });
 
-    pointsOfInterestLayer = new L.LayerGroup();
+    // TODO: Look at Leaflet.FeatureGroup.SubGroup for toggling markers by type.
+    pointsOfInterestLayer = L.markerClusterGroup();
     map.addLayer(pointsOfInterestLayer);
 
     gpx_route

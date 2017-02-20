@@ -30,6 +30,7 @@ var src_paths = {
     'node_modules/leaflet/dist/**/*',
     'node_modules/leaflet-geometryutil/src/leaflet.geometryutil.js',
     'node_modules/leaflet-routeboxer/src/leaflet-routeboxer.js',
+    'node_modules/leaflet.markercluster/dist/*',
     'node_modules/leaflet-overpass-layer/dist/*',
     'node_modules/whatwg-fetch/fetch.js',
     src + '_vendor/**/*'

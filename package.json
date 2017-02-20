@@ -22,6 +22,7 @@
     "leaflet": "^1.0.3",
     "leaflet-geometryutil": "^0.8.0",
     "leaflet-routeboxer": "^1.0.0",
+    "leaflet.markercluster": "^1.0.3",
     "whatwg-fetch": "^2.0.2"
   },
   "devDependencies": {

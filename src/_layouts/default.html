@@ -9,8 +9,9 @@
 
     <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
 
-
     <link rel="stylesheet" href="/assets/vendor/node_modules/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="/assets/vendor/node_modules/leaflet.markercluster/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="/assets/vendor/node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css">
 
     <!--[if lte IE 8]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -41,6 +42,7 @@
     <script src="/assets/vendor/node_modules/leaflet-routeboxer/src/leaflet-routeboxer.js"></script>
     <script src="/assets/vendor/src/_vendor/leaflet-gpx-1.2.0/gpx.js"></script>
     <script src="/assets/vendor/node_modules/whatwg-fetch/fetch.js"></script>
+    <script src="/assets/vendor/node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
     <script src="/assets/js/main.js"></script>
 
