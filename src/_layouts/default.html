@@ -23,6 +23,9 @@
     <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
 
     <script type="x-mapbox-access-token">{{ site.mapbox_access_token }}</script>
+
+    <!-- TODO: This is a super sensitive secret, don't send this to any production environments; move cycle street processing to a guarded proxy API -->
+    <script type="x-cyclestreets-api-key">{{ site.cyclestreets_api_key }}</script>
 </head>
 <body>
 
@@ -43,6 +46,7 @@
     <script src="/assets/vendor/src/_vendor/leaflet-gpx-1.2.0/gpx.js"></script>
     <script src="/assets/vendor/node_modules/whatwg-fetch/fetch.js"></script>
     <script src="/assets/vendor/node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+    <script src="/assets/vendor/node_modules/url-search-params/build/url-search-params.js"></script>
 
     <script src="/assets/js/main.js"></script>
 

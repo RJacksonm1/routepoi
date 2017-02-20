@@ -33,6 +33,7 @@ var src_paths = {
     'node_modules/leaflet.markercluster/dist/*',
     'node_modules/leaflet-overpass-layer/dist/*',
     'node_modules/whatwg-fetch/fetch.js',
+    'node_modules/url-search-params/build/url-search-params.js',
     src + '_vendor/**/*'
   ],
   html: src + '**/*.html'

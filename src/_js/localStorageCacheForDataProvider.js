@@ -5,9 +5,9 @@ class localStorageCacheForDataProvider {
         this.data_provider = data_provider;
     }
 
-    fetch(query) {
+    fetch(latLngBounds, type) {
         return new Promise((resolve, reject) => {
-            let item_key = this.cache_key + '_' + query;
+            let item_key = this.cache_key + '_' + L.LatLngBoundsToSWNEBbox(latLngBounds) + '_' + type;
             let cached_item = localStorage.getItem(item_key);
 
             if (cached_item !== null) {
@@ -18,22 +18,10 @@ class localStorageCacheForDataProvider {
                 return resolve(cached_item.data);
             }
 
-            let xhr = this.data_provider.fetch(query);
+            let xhr = this.data_provider.fetch(latLngBounds, type);
             let self = this;
 
             xhr
-                .then(response => {
-                    if (response.status >= 200 && response.status < 300) {
-                        return response;
-                    } else {
-                        var error = new Error(response.statusText);
-                        error.response = response;
-                        throw error;
-                    }
-                })
-                .then((response) => {
-                    return response.json();
-                })
                 .then((response) => {
                     localStorage.setItem(
                         item_key,

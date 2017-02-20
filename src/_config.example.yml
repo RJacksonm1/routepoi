@@ -6,6 +6,7 @@ description: Point of interest for (cycle) routes
 baseurl: ""
 url: "http://routepoi.dev/"
 mapbox_access_token: ''
+cyclestreets_api_key: ''
 
 # Build settings
 source: ./

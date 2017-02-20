@@ -1,12 +1,21 @@
 // TODO: This is a hot-mess of quick functional prototyping. Give this code a
 // good scrubbing before making it public!
 
-L.LatLngBoundsToBbox = function(latLngBounds) {
+L.LatLngBoundsToSWNEBbox = function(latLngBounds) {
     return [
         latLngBounds._southWest.lat,
         latLngBounds._southWest.lng,
         latLngBounds._northEast.lat,
         latLngBounds._northEast.lng
+    ].join(',');
+};
+
+L.LatLngBoundsToWSENBbox = function(latLngBounds) {
+    return [
+        latLngBounds._southWest.lng,
+        latLngBounds._southWest.lat,
+        latLngBounds._northEast.lng,
+        latLngBounds._northEast.lat
     ].join(',');
 };
 
@@ -21,13 +30,31 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
     var tileset; // The maps tiles
     var attribution; // Attribution for various data sources
     var mapbox_access_token = document.querySelector('script[type="x-mapbox-access-token"]').text;
+    var cyclestreets_api_key = document.querySelector('script[type="x-cyclestreets-api-key"]').text;
     var pointsOfInterestLayer;
+    var markerClusterEnabled = false;
+    var provider = 'cyclestreets';
+    var poi_data_provider;
 
-    var poi_data_provider = new localStorageCacheForDataProvider(
-        'overpass_point',
-        new OverpassDataProvider(), // TODO: Give CycleStreets API a go
-        60 * 60 * 24 // Cache for 24hrs
-    );
+    if (provider == 'overpass') {
+        poi_data_provider = new localStorageCacheForDataProvider(
+            'overpass',
+            // new CycleStreetsDataProvider(cyclestreets_api_key),
+            new OverpassDataProvider(),
+            60 * 60 * 24 // Cache for 24hrs
+        );
+    }
+    else if (provider == 'cyclestreets') {
+        poi_data_provider = new localStorageCacheForDataProvider(
+            'cyclestreets',
+            new CycleStreetsDataProvider(cyclestreets_api_key),
+            60 * 60 * 24 // Cache for 24hrs
+        );
+    }
+    else {
+        console.log('No provider ??? ');
+        return;
+    }
 
     // gpx = '/assets/Big_Bad_Bike_Ride_2016.gpx';
     gpx = '/assets/York_to_Manchester.gpx';
@@ -62,7 +89,7 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
     });
 
     // TODO: Look at Leaflet.FeatureGroup.SubGroup for toggling markers by type.
-    pointsOfInterestLayer = L.markerClusterGroup();
+    pointsOfInterestLayer = markerClusterEnabled ? L.markerClusterGroup() : new L.LayerGroup();
     map.addLayer(pointsOfInterestLayer);
 
     gpx_route
@@ -85,7 +112,7 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
 
                 if (results !== undefined) {
 
-                    renderPointsOfInterest(results.elements);
+                    renderPointsOfInterest(results);
                 }
 
                 if (i > search_boxes.length - 1) {
@@ -102,7 +129,15 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
     // -------------------------------------------------------------------------
 
     function drawBoundingBox(box) {
-        search_boxes_visualisation[L.LatLngBoundsToBbox(box)] = new L.Rectangle(box).addTo(map);
+        let rectangle = new L.Rectangle(box);
+        search_boxes_visualisation[L.LatLngBoundsToSWNEBbox(box)] = rectangle;
+        rectangle.addTo(map);
+
+        // Log bounds on click, for maximum debugs
+        rectangle.on('click', (e) => {
+            console.log('SWNE', L.LatLngBoundsToSWNEBbox(e.target.getBounds()));
+            console.log('WSEN', L.LatLngBoundsToWSENBbox(e.target.getBounds()));
+        });
     }
 
     // -------------------------------------------------------------------------
@@ -120,12 +155,21 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
     // -------------------------------------------------------------------------
 
     function findPlacesInBoundingBox(box, callback) {
-        var bbox = L.LatLngBoundsToBbox(box);
+        let type;
 
+        if (provider == 'overpass') {
+            type = 'cafe|fast_food|biergarten|bar|pub';
+        }
+        else if (provider == 'cyclestreets') {
+            type = 'cafes';
+        }
         poi_data_provider
-            .fetch('node["amenity"~"(cafe|fast_food|biergarten|bar|pub)"](' + bbox + ');out;')
+            .fetch(
+                box,
+                type
+            )
             .then((data) => {
-                search_boxes_visualisation[bbox].setStyle({
+                search_boxes_visualisation[L.LatLngBoundsToSWNEBbox(box)].setStyle({
                     color: '#0c3',
                     fillOpacity: 0,
                     weight: 1,
@@ -135,7 +179,7 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
             })
             .then(callback)
             .catch((error) => {
-                console.log('request failed', error)
+                console.log('request failed', error);
             });
 
             // function(data) {
@@ -178,14 +222,9 @@ L.LatLngBoundsToBbox = function(latLngBounds) {
 
     function renderPointsOfInterest(pois) {
         pois.forEach(function(poi) {
-
-            let position = new L.LatLng(
-                poi.center ? poi.center.lat : poi.lat,
-                poi.center ? poi.center.lon : poi.lon
-            );
-
-
-            let marker = L.marker(position);
+            let marker = L.marker(poi.position, {
+                title: poi.name
+            });
             marker.addTo(pointsOfInterestLayer);
         });
     }
