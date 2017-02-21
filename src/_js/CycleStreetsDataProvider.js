@@ -12,7 +12,19 @@ class CycleStreetsDataProvider {
         this.limit = limit || 400;
     }
 
-    fetch(latLngBounds, type) {
+    fetch(latLngBounds, types) {
+
+        if (types instanceof Array) {
+            return Promise.all(types.map(this.fetchSingle.bind(this, latLngBounds)))
+            .then(data => {
+                return [].concat.apply([], data);
+            });
+        }
+
+        return this.fetchSingle(latLngBounds, types);
+    }
+
+    fetchSingle(latLngBounds, type) {
         return fetch(this.endpoint + '?' + this.generateQueryParams(latLngBounds, type))
                 .then(response => {
                     if (response.status >= 200 && response.status < 300) {
@@ -24,7 +36,7 @@ class CycleStreetsDataProvider {
                     }
                 })
                 .then(response => { return response.json(); })
-                .then(this.mapResponseToPointOfInterests.bind(this));
+                .then(this.mapResponseToPointOfInterests.bind(this, type));
     }
 
     generateQueryParams(latLngBounds, type) {
@@ -45,15 +57,16 @@ class CycleStreetsDataProvider {
         return searchParams.toString();
     }
 
-    mapResponseToPointOfInterests(response) {
-        return response.features.map(this.createPointOfInterest);
+    mapResponseToPointOfInterests(type, response) {
+        return response.features.map(this.createPointOfInterest.bind(this, type));
     }
 
-    createPointOfInterest(feature) {
+    createPointOfInterest(type, feature) {
         return new PointOfInterest(
             feature.properties.name,
             feature.geometry.coordinates[1],
-            feature.geometry.coordinates[0]
+            feature.geometry.coordinates[0],
+            type
         );
     }
 }
