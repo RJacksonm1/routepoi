@@ -5,7 +5,19 @@ class localStorageCacheForDataProvider {
         this.data_provider = data_provider;
     }
 
-    fetch(latLngBounds, type) {
+    fetch(latLngBounds, types) {
+
+        if (types instanceof Array) {
+            return Promise.all(types.map(this.fetchSingle.bind(this, latLngBounds)))
+            .then(data => {
+                return [].concat.apply([], data);
+            });
+        }
+
+        return this.fetchSingle(latLngBounds, types);
+    }
+
+    fetchSingle(latLngBounds, type) {
         return new Promise((resolve, reject) => {
             let item_key = this.cache_key + '_' + L.LatLngBoundsToSWNEBbox(latLngBounds) + '_' + type;
             let cached_item = localStorage.getItem(item_key);

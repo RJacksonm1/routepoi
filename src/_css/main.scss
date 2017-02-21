@@ -6,14 +6,34 @@ $base-asset-url: '/assets/';
 .routepoi-logo {
   @include heading-h2;
 
-  color: $body-copy;
-  text-decoration: none;
   border-bottom: 0;
+  color: $body-copy;
   display: block;
-  text-align: left;
   font-weight: 300;
+  text-align: left;
+  text-decoration: none;
 }
 
 .map {
   height: 530px;
+}
+
+.poi-types {
+  align-items: space-between;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  margin-left: -.5rem;
+  margin-right: -.5rem;
+
+  &__title {
+    flex-basis: 100%;
+  }
+
+  &__type {
+    flex-basis: 50%;
+    padding-bottom: 1rem;
+    padding-left: .5rem;
+    padding-right: .5rem;
+  }
 }
