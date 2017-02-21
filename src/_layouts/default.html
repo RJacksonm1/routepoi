@@ -9,10 +9,6 @@
 
     <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
 
-    <link rel="stylesheet" href="/assets/vendor/node_modules/leaflet/dist/leaflet.css">
-    <link rel="stylesheet" href="/assets/vendor/node_modules/leaflet.markercluster/dist/MarkerCluster.css">
-    <link rel="stylesheet" href="/assets/vendor/node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css">
-
     <!--[if lte IE 8]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <link rel="stylesheet" type="text/css" href="/assets/css/ie.css">
@@ -36,17 +32,6 @@
       {{ content }}
 
     </main>
-
-    <!-- <script src="//code.jquery.com/jquery-1.12.1.min.js" integrity="sha256-I1nTg78tSrZev3kjvfdM5A5Ak/blglGzlaZANLPDl3I=" crossorigin="anonymous"></script>
-    <script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery-1.12.1.min.js"><\/script>')</script> -->
-
-    <script src="/assets/vendor/node_modules/leaflet/dist/leaflet.js"></script>
-    <script src="/assets/vendor/node_modules/leaflet-geometryutil/src/leaflet.geometryutil.js"></script>
-    <script src="/assets/vendor/node_modules/leaflet-routeboxer/src/leaflet-routeboxer.js"></script>
-    <script src="/assets/vendor/src/_vendor/leaflet-gpx-1.2.0/gpx.js"></script>
-    <script src="/assets/vendor/node_modules/whatwg-fetch/fetch.js"></script>
-    <script src="/assets/vendor/node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
-    <script src="/assets/vendor/node_modules/url-search-params/build/url-search-params.js"></script>
 
     <script src="/assets/js/main.js"></script>
 

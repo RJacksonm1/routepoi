@@ -33,6 +33,7 @@ L.LatLngBoundsToWSENBbox = function(latLngBounds) {
     var cyclestreets_api_key = document.querySelector('script[type="x-cyclestreets-api-key"]').text;
     var pointsOfInterestLayer;
     var markerClusterEnabled = false;
+    // var provider = 'overpass';
     var provider = 'cyclestreets';
     var poi_data_provider;
 
@@ -56,8 +57,8 @@ L.LatLngBoundsToWSENBbox = function(latLngBounds) {
         return;
     }
 
-    // gpx = '/assets/Big_Bad_Bike_Ride_2016.gpx';
-    gpx = '/assets/York_to_Manchester.gpx';
+    gpx = '/assets/Big_Bad_Bike_Ride_2016.gpx';
+    // gpx = '/assets/York_to_Manchester.gpx';
 
     // Create map
     map = new L.map('route-map', {
@@ -82,9 +83,9 @@ L.LatLngBoundsToWSENBbox = function(latLngBounds) {
     gpx_route = new L.GPX(gpx, {
         async: true,
         marker_options: {
-            startIconUrl: '/assets/vendor/src/_vendor/leaflet-gpx-1.2.0/pin-icon-start.png',
-            endIconUrl: '/assets/vendor/src/_vendor/leaflet-gpx-1.2.0/pin-icon-end.png',
-            shadowUrl: '/assets/vendor/src/_vendor/leaflet-gpx-1.2.0/pin-shadow.png'
+            startIconUrl: '/assets/vendor/leaflet-gpx-1.2.0/pin-icon-start.png',
+            endIconUrl: '/assets/vendor/leaflet-gpx-1.2.0/pin-icon-end.png',
+            shadowUrl: '/assets/vendor/leaflet-gpx-1.2.0/pin-shadow.png'
         }
     });
 

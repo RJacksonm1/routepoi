@@ -5,6 +5,7 @@ var connect = require('gulp-connect');
 var gulp = require('gulp');
 var include = require('gulp-include');
 var jshint = require('gulp-jshint');
+var merge = require('merge-stream');
 var mocha = require('gulp-mocha');
 var sass = require('gulp-sass');
 var scsslint = require('gulp-scss-lint');
@@ -21,20 +22,29 @@ var dest = 'build/';
 
 var src_paths = {
   styles: src + '_css/**/*.scss',
+  vendor_styles: [
+    'node_modules/leaflet/dist/leaflet.css',
+    'node_modules/leaflet.markercluster/dist/MarkerCluster.css',
+    'node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css'
+  ],
+
   scripts: src + '_js/**/*.js',
+  vendor_scripts: [
+    'node_modules/leaflet/dist/leaflet.js',
+    'node_modules/leaflet-geometryutil/src/leaflet.geometryutil.js',
+    'node_modules/leaflet-routeboxer/src/leaflet-routeboxer.js',
+    'node_modules/whatwg-fetch/fetch.js',
+    'node_modules/url-search-params/build/url-search-params.js',
+    src + '_assets/vendor/leaflet-gpx-1.2.0/gpx.js',
+    'node_modules/leaflet.markercluster/dist/leaflet.markercluster.js',
+  ],
+
   assets: [
     src + '_assets/**/*',
     'node_modules/coop-frontend-toolkit/static/**/*',
-  ],
-  vendor: [
     'node_modules/leaflet/dist/**/*',
-    'node_modules/leaflet-geometryutil/src/leaflet.geometryutil.js',
-    'node_modules/leaflet-routeboxer/src/leaflet-routeboxer.js',
     'node_modules/leaflet.markercluster/dist/*',
     'node_modules/leaflet-overpass-layer/dist/*',
-    'node_modules/whatwg-fetch/fetch.js',
-    'node_modules/url-search-params/build/url-search-params.js',
-    src + '_vendor/**/*'
   ],
   html: src + '**/*.html'
 };
@@ -43,7 +53,6 @@ var dest_paths = {
   styles: dest + 'assets/css',
   scripts: dest + 'assets/js',
   assets: dest + 'assets',
-  vendor: dest + 'assets/vendor',
 };
 
 var settings = {
@@ -96,19 +105,28 @@ gulp.task('jekyll', function (gulpCallBack){
 
 // Styles
 gulp.task('css', ['lintscss'], function() {
-  gulp.src(src_paths.styles)
+  var sassStream = gulp.src(src_paths.styles)
     .pipe(sourcemaps.init())
       .pipe(sass(settings.sass))
       .on('error', sass.logError)
-      .pipe(autoprefixer(settings.autoprefixer))
+      .pipe(autoprefixer(settings.autoprefixer));
+
+  var cssStream = gulp.src(src_paths.vendor_styles)
+    .pipe(sourcemaps.init());
+
+  merge(sassStream, cssStream)
     .pipe(sourcemaps.write('maps/'))
+    .pipe(concat('main.css'))
     .pipe(gulp.dest(dest_paths.styles))
     .pipe(connect.reload());
 });
 
 // Scripts
 gulp.task('js', ['lintjs'], function() {
-  gulp.src(src_paths.scripts)
+  gulp.src([].concat(
+      src_paths.vendor_scripts,
+      src_paths.scripts
+    ))
     .pipe(sourcemaps.init())
     .pipe(include())
     .pipe(babel({
@@ -125,15 +143,6 @@ gulp.task('js', ['lintjs'], function() {
 gulp.task('assets', function() {
   gulp.src(src_paths.assets)
     .pipe(gulp.dest(dest_paths.assets))
-    .pipe(connect.reload());
-});
-
-// Third party
-gulp.task('vendor', function() {
-  gulp.src(src_paths.vendor, {
-      base: '.',
-    })
-    .pipe(gulp.dest(dest_paths.vendor))
     .pipe(connect.reload());
 });
 
@@ -174,7 +183,7 @@ gulp.task('connect', function() {
  * Run tasks
  */
 gulp.task('test', ['testjs']);
-gulp.task('build', ['html', 'css', 'js', 'assets', 'vendor']);
+gulp.task('build', ['html', 'css', 'js', 'assets']);
 gulp.task('server', ['build', 'watch', 'connect']);
 
 gulp.task('default', ['server']);
