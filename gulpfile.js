@@ -5,11 +5,11 @@ var connect = require('gulp-connect');
 var gulp = require('gulp');
 var include = require('gulp-include');
 var jshint = require('gulp-jshint');
-var merge = require('merge-stream');
 var mocha = require('gulp-mocha');
 var sass = require('gulp-sass');
 var scsslint = require('gulp-scss-lint');
 var sourcemaps = require('gulp-sourcemaps');
+var streamqueue = require('streamqueue');
 var stylish = require('jshint-stylish');
 var uglify = require('gulp-uglify');
 
@@ -36,7 +36,8 @@ var src_paths = {
     'node_modules/whatwg-fetch/fetch.js',
     'node_modules/url-search-params/build/url-search-params.js',
     src + '_assets/vendor/leaflet-gpx-1.2.0/gpx.js',
-    'node_modules/leaflet.markercluster/dist/leaflet.markercluster.js',
+    'node_modules/leaflet.markercluster/dist/leaflet.markercluster-src.js',
+    'node_modules/leaflet.featuregroup.subgroup/dist/leaflet.featuregroup.subgroup-src.js',
   ],
 
   assets: [
@@ -44,7 +45,6 @@ var src_paths = {
     'node_modules/coop-frontend-toolkit/static/**/*',
     'node_modules/leaflet/dist/**/*',
     'node_modules/leaflet.markercluster/dist/*',
-    'node_modules/leaflet-overpass-layer/dist/*',
   ],
   html: src + '**/*.html'
 };
@@ -114,7 +114,10 @@ gulp.task('css', ['lintscss'], function() {
   var cssStream = gulp.src(src_paths.vendor_styles)
     .pipe(sourcemaps.init());
 
-  merge(sassStream, cssStream)
+  streamqueue({ objectMode: true },
+    sassStream,
+    cssStream
+  )
     .pipe(sourcemaps.write('maps/'))
     .pipe(concat('main.css'))
     .pipe(gulp.dest(dest_paths.styles))
@@ -123,20 +126,25 @@ gulp.task('css', ['lintscss'], function() {
 
 // Scripts
 gulp.task('js', ['lintjs'], function() {
-  gulp.src([].concat(
-      src_paths.vendor_scripts,
-      src_paths.scripts
-    ))
+  var vendorStream = gulp.src(src_paths.vendor_scripts)
+    .pipe(sourcemaps.init());
+
+  var mainStream = gulp.src(src_paths.scripts)
     .pipe(sourcemaps.init())
     .pipe(include())
     .pipe(babel({
       presets: ['es2015']
-    }))
-    .pipe(concat('main.js'))
-    // .pipe(uglify())
-    .pipe(sourcemaps.write('maps/'))
-    .pipe(gulp.dest(dest_paths.scripts))
-    .pipe(connect.reload());
+    }));
+
+    streamqueue({ objectMode: true },
+        vendorStream,
+        mainStream
+    )
+      .pipe(concat('main.js'))
+      // .pipe(uglify())
+      .pipe(sourcemaps.write('maps/'))
+      .pipe(gulp.dest(dest_paths.scripts))
+      .pipe(connect.reload());
 });
 
 // Static assets

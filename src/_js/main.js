@@ -1,24 +1,6 @@
 // TODO: This is a hot-mess of quick functional prototyping. Give this code a
 // good scrubbing before making it public!
 
-L.LatLngBoundsToSWNEBbox = function(latLngBounds) {
-    return [
-        latLngBounds._southWest.lat,
-        latLngBounds._southWest.lng,
-        latLngBounds._northEast.lat,
-        latLngBounds._northEast.lng
-    ].join(',');
-};
-
-L.LatLngBoundsToWSENBbox = function(latLngBounds) {
-    return [
-        latLngBounds._southWest.lng,
-        latLngBounds._southWest.lat,
-        latLngBounds._northEast.lng,
-        latLngBounds._northEast.lat
-    ].join(',');
-};
-
 (function(L){
     // const gpx = '/assets/Big_Bad_Bike_Ride_2016.gpx'; // The route file
     const gpx = '/assets/York_to_Manchester.gpx'; // The route file
@@ -27,26 +9,20 @@ L.LatLngBoundsToWSENBbox = function(latLngBounds) {
     const markerClusterEnabled = true;
     const type_json = JSON.parse(document.querySelector('script[type="x-routepoi-types"]').text);
     const type_icons = {};
+    const type_layers = {};
+    const type_checkboxes = document.querySelectorAll('input[name="types[]"]');
+
     const search_radius = 1; // How far around the route to search, in km.
     const search_boxes_visualisation = {}; // Visualisations of the search boxes
 
     // TODO: Look at Leaflet.FeatureGroup.SubGroup for toggling markers by type.
-    const pointsOfInterestLayer = markerClusterEnabled ? L.markerClusterGroup() : new L.LayerGroup();
+    const points_of_interest_layer = markerClusterEnabled ? L.markerClusterGroup() : new L.LayerGroup();
 
     // var places_api; // Google Places API
     let search_boxes; // Bounding boxes to search in for POI along the route
     const attribution = ['Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
                    'Imagery © <a href="https://mapbox.com">Mapbox</a>',
                    'POI data via <a href="https://www.cyclestreets.net">CycleStreets</a>'].join(', ');
-
-   let selected_types = [];
-
-    for(let type of type_json) {
-        type_icons[type.name] = new L.icon({
-            iconUrl: 'data:image/png;base64,' + type.icon,
-            iconSize: [16, 16]
-        });
-    }
 
     const poi_data_provider = new localStorageCacheForDataProvider(
         'cyclestreets',
@@ -58,7 +34,6 @@ L.LatLngBoundsToWSENBbox = function(latLngBounds) {
     const map = new L.map('route-map', {
         renderer: L.svg()
     });
-    map.setView([51.505, -0.09], 13);
 
     // Add tiles
     const tileset = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/{style}/tiles/256/{z}/{x}/{y}?access_token={accessToken}', {
@@ -79,7 +54,17 @@ L.LatLngBoundsToWSENBbox = function(latLngBounds) {
         }
     });
 
-    map.addLayer(pointsOfInterestLayer);
+    map.addLayer(points_of_interest_layer);
+
+    for(let type of type_json) {
+        type_icons[type.name] = new L.icon({
+            iconUrl: 'data:image/png;base64,' + type.icon,
+            iconSize: [16, 16]
+        });
+
+        type_layers[type.name] = new L.FeatureGroup.SubGroup(points_of_interest_layer);
+        type_layers[type.name].addTo(map);
+    }
 
     gpx_route
         .on('loaded', function(e) {
@@ -88,13 +73,11 @@ L.LatLngBoundsToWSENBbox = function(latLngBounds) {
         .addTo(map);
 
     // Generate the bounding boxes search areas, plot them, find places within them.
-    gpx_route.on('loaded', fetchAndRenderPois);
+    gpx_route.on('loaded', fetchPois);
 
     // -------------------------------------------------------------------------
 
-    function fetchAndRenderPois(){
-        pointsOfInterestLayer.clearLayers();
-
+    function fetchPois(){
         // TODO: Must be a better way of extracting the Polyline?
         findLayerType(gpx_route, L.Polyline, function(layer){
             search_boxes = L.RouteBoxer.box(layer.getLatLngs(), search_radius);
@@ -163,7 +146,7 @@ L.LatLngBoundsToWSENBbox = function(latLngBounds) {
         poi_data_provider
             .fetch(
                 box,
-                selected_types
+                Object.keys(type_icons)
             )
             .then((data) => {
                 search_boxes_visualisation[L.LatLngBoundsToSWNEBbox(box)].setStyle({
@@ -192,7 +175,9 @@ L.LatLngBoundsToWSENBbox = function(latLngBounds) {
                 marker.setIcon(type_icons[poi.type]);
             }
 
-            marker.addTo(pointsOfInterestLayer);
+            marker.addTo(
+                type_layers[poi.type]
+            );
         });
     }
 
@@ -218,33 +203,33 @@ L.LatLngBoundsToWSENBbox = function(latLngBounds) {
 
     // ------------
 
-    function updateSelectedTypes() {
+    function getSelectedTypes() {
         return new Promise((resolve, reject) => {
             let selected_type_elems = document.querySelectorAll('input[name="types[]"]:checked');
 
             resolve(Array.prototype.map.call(selected_type_elems, type => {
                 return type.value;
             }));
-        })
-        .then((types) => {
-            selected_types = types;
         });
     }
-    updateSelectedTypes();
+    getSelectedTypes();
 
     // ----------
 
     function onTypeCheckboxChange() {
-        updateSelectedTypes()
-            .then(() => {
-                // Clear the map and re-fetch, for now at least.
-                // TODO: FeatureGroup layer will be better of doing this.
-                fetchAndRenderPois();
+        getSelectedTypes()
+            .then(selected_types => {
+                for(let type in type_layers) {
+                    map.removeLayer(type_layers[type]);
+                }
+
+                selected_types.forEach(type => {
+                    map.addLayer(type_layers[type]);
+                });
             });
     }
 
     // Attach event handlers to type checkboxes.
-    let type_checkboxes = document.querySelectorAll('input[name="types[]"]');
     Array.prototype.map.call(type_checkboxes, (checkbox_elem) => {
         checkbox_elem.addEventListener('change', onTypeCheckboxChange);
     });
