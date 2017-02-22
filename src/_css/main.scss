@@ -36,4 +36,13 @@ $base-asset-url: '/assets/';
     padding-left: .5rem;
     padding-right: .5rem;
   }
+
+  &__type__count {
+    &:before {
+      content: '('
+    }
+    &:after {
+      content: ')'
+    }
+  }
 }

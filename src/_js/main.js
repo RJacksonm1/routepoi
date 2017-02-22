@@ -2,8 +2,8 @@
 // good scrubbing before making it public!
 
 (function(L){
-    // const gpx = '/assets/Big_Bad_Bike_Ride_2016.gpx'; // The route file
-    const gpx = '/assets/York_to_Manchester.gpx'; // The route file
+    const gpx = '/assets/Big_Bad_Bike_Ride_2016.gpx'; // The route file
+    // const gpx = '/assets/York_to_Manchester.gpx'; // The route file
     const mapbox_access_token = document.querySelector('script[type="x-mapbox-access-token"]').text;
     const cyclestreets_api_key = document.querySelector('script[type="x-cyclestreets-api-key"]').text;
     const markerClusterEnabled = true;
@@ -90,7 +90,10 @@
 
                 if (results !== undefined) {
 
-                    renderPointsOfInterest(results);
+                    renderPointsOfInterest(results)
+                        .then(
+                            updateFilterCounts
+                        );
                 }
 
                 if (i > search_boxes.length - 1) {
@@ -166,18 +169,31 @@
     // -------------------------------------------------------------------------
 
     function renderPointsOfInterest(pois) {
-        pois.forEach(function(poi) {
-            let marker = L.marker(poi.position, {
-                title: poi.name
+        return new Promise((resolve, reject) => {
+            pois.forEach(function(poi) {
+                let marker = L.marker(poi.position, {
+                    title: poi.name
+                });
+
+                if (type_icons[poi.type] !== undefined) {
+                    marker.setIcon(type_icons[poi.type]);
+                }
+
+                marker.addTo(
+                    type_layers[poi.type]
+                );
             });
+            resolve(pois);
+        });
+    }
 
-            if (type_icons[poi.type] !== undefined) {
-                marker.setIcon(type_icons[poi.type]);
-            }
+    // -------------------------------------------------------------------------
 
-            marker.addTo(
-                type_layers[poi.type]
-            );
+    function updateFilterCounts(pois) {
+        type_checkboxes.forEach(checkbox => {
+            console.log(checkbox.value, type_layers[checkbox.value].getLayers().length);
+            let count_elem = checkbox.parentElement.querySelector('.poi-types__type__count');
+            count_elem.textContent = type_layers[checkbox.value].getLayers().length;
         });
     }
 

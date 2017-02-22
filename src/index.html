@@ -35,6 +35,7 @@ types:
                             <!-- <label class="block-label poi-types__type"> -->
                                 <input type="checkbox" value="{{ type.name }}" name="types[]" checked>
                                 {{ type.name | capitalize }}
+                                <span class="poi-types__type__count">0</span>
                             </label>
                         </div>
                     {% endfor %}
