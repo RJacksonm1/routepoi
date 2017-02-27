@@ -35,7 +35,6 @@ var src_paths = {
     'node_modules/leaflet-routeboxer/src/leaflet-routeboxer.js',
     'node_modules/whatwg-fetch/fetch.js',
     'node_modules/url-search-params/build/url-search-params.js',
-    src + '_assets/vendor/leaflet-gpx-1.2.0/gpx.js',
     'node_modules/leaflet.markercluster/dist/leaflet.markercluster-src.js',
     'node_modules/leaflet.featuregroup.subgroup/dist/leaflet.featuregroup.subgroup-src.js',
   ],
