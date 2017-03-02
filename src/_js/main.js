@@ -11,16 +11,20 @@
         60 * 60 * 24 // Cache for 24hrs
     );
 
-    // Create map,
+    const results_table = document.querySelector('.poi-results-table');
+
+    // Create map
     const routepoi = new RoutePOI(
         mapbox_access_token,
         true, // Marker cluster?
         JSON.parse(document.querySelector('script[type="x-routepoi-types"]').text),
         document.querySelectorAll('input[name="types[]"]'),
         poi_data_provider,
+        results_table,
         true
     );
 
     routepoi.addRoute(gpx)
-        .then(routepoi.search.bind(routepoi, search_radius));
+        .then(routepoi.search.bind(routepoi, search_radius))
+        .then(routepoi.populateResultsTable.bind(routepoi)); // Add to poi table.
 })(L);

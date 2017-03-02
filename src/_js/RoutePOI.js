@@ -1,9 +1,14 @@
 class RoutePOI {
-    constructor(mapbox_access_token, enable_marker_cluster, types_src, types_checkboxes, data_provider, debug) {
+    // TODO: There's gotta be a much cleaner way of handing these fars. Options
+    // object for the optional ones?
+    constructor(mapbox_access_token, enable_marker_cluster, types_src,
+                types_checkboxes, data_provider, results_table, debug) {
+
         // Configuration
         this.mapbox_access_token = mapbox_access_token;
         this.enable_marker_cluster = enable_marker_cluster || false;
         this.data_provider = data_provider;
+        this.results_table = results_table;
         this.debug = debug || false; // Debug mode: Draws search area bounding boxes
 
         // Set up map
@@ -124,6 +129,7 @@ class RoutePOI {
     }
 
     _searchBox(box, next) {
+        // Doing too much here. Separate out into proper methods.
         return this.data_provider
             .fetch(
                 box,
@@ -147,6 +153,11 @@ class RoutePOI {
                 this.types.forEach(type => {
                     type.updateCounts();
                 });
+                return pois;
+            })
+            .then(pois => {
+                this.pois = this.pois.concat(pois);
+                return pois;
             })
             .catch((error) => {
                 console.log('request failed', error);
@@ -181,4 +192,33 @@ class RoutePOI {
 
         return poi;
     }
+
+    populateResultsTable() {
+        let tbody = this.results_table.querySelector('tbody');
+
+        this.pois.forEach(poi => {
+            tbody.appendChild(this._createPoiRow(poi));
+        });
+    }
+
+    // Must be a MUCH easier way to do this in ES6? Without resorting to 3rd
+    // party libs e.g. handlebars?
+    _createPoiRow(poi) {
+        let row = document.createElement('tr');
+        let name_cell = document.createElement('td');
+        name_cell.appendChild(document.createTextNode(poi.name));
+        row.appendChild(name_cell);
+
+        let type_cell = document.createElement('td');
+        type_cell.appendChild(document.createTextNode(poi.type));
+        row.appendChild(type_cell);
+
+        let distance_cell = document.createElement('td');
+        distance_cell.appendChild(document.createTextNode('TODO'));
+        row.appendChild(distance_cell);
+
+        return row;
+
+    }
+
 }

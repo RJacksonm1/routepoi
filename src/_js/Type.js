@@ -28,4 +28,4 @@ class Type {
     hide() {
         this.map.removeLayer(this.layer);
     }
-};
+}

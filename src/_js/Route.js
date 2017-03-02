@@ -75,4 +75,4 @@ class Route {
 
         return point_data;
     }
-};
+}
