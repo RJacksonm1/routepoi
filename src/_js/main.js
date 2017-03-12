@@ -1,7 +1,5 @@
 (function(L){
     const cyclestreets_api_key = document.querySelector('script[type="x-cyclestreets-api-key"]').text;
-    // const gpx = '/assets/Big_Bad_Bike_Ride_2016.gpx'; // The route file
-    const gpx = '/assets/York_to_Manchester.gpx'; // The route file
     const mapbox_access_token = document.querySelector('script[type="x-mapbox-access-token"]').text;
     const search_radius = 2; // km
 
@@ -24,7 +22,21 @@
         true
     );
 
-    routepoi.addRoute(gpx)
-        .then(routepoi.search.bind(routepoi, search_radius))
-        .then(routepoi.populateResultsTable.bind(routepoi)); // Add to poi table.
+    const gpx_picker = document.querySelector('input[name="route"]');
+    const file_reader = new FileReader();
+    gpx_picker.addEventListener('change', e => {
+        if (gpx_picker.files.length !== 1)
+            return;
+
+        routepoi.clearRoute();
+
+        let file = gpx_picker.files[0];
+        file_reader.readAsText(file);
+
+        file_reader.onload = e => {
+            routepoi.addRoute(e.target.result)
+                .then(routepoi.search.bind(routepoi, search_radius))
+                .then(routepoi.populateResultsTable.bind(routepoi)); // Add to poi table.
+        };
+    });
 })(L);

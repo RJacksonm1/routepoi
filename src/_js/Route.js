@@ -1,23 +1,14 @@
 class Route {
-    constructor(gpx_url) {
-        this.gpx_url = gpx_url;
+    constructor(gpx_txt) {
+        this.gpx_txt = gpx_txt;
         this.polyline = undefined;
         this.layer = new L.FeatureGroup();
     }
 
-    _loadGpx() {
-        return fetch(
-            this.gpx_url,
-            {
-                method: 'GET',
-                headers: {
-                  "Content-Type": "text, xml"
-                }
-            }
-        )
-            .then(response => {
-                return response.text();
-            })
+    load() {
+        return new Promise((resolve, reject) => {
+            resolve(this.gpx_txt);
+        })
             .then(this._createPolylineFromGpx.bind(this))
             .then(polylines => {
                 polylines.forEach(polyline => {
@@ -74,5 +65,9 @@ class Route {
         // Irrelevant to this application though.
 
         return point_data;
+    }
+
+    getLayer() {
+        return this.layer;
     }
 }

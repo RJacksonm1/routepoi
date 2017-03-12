@@ -16,7 +16,7 @@
     "gulp-sass": "^2.2.0",
     "gulp-scss-lint": "^0.3.9",
     "gulp-sourcemaps": "^1.6.0",
-    "gulp-uglify": "^1.5.3",
+  "gulp-uglify": "^1.5.3",
     "jshint": "^2.9.1",
     "jshint-stylish": "^2.1.0",
     "leaflet": "^1.0.3",
@@ -25,8 +25,7 @@
     "leaflet.featuregroup.subgroup": "^1.0.1",
     "leaflet.markercluster": "^1.0.3",
     "streamqueue": "^1.1.1",
-    "url-search-params": "^0.6.1",
-    "whatwg-fetch": "^2.0.2"
+    "url-search-params": "^0.6.1"
   },
   "devDependencies": {
     "gulp-debug": "^3.0.0"

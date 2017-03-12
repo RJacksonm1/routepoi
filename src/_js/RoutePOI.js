@@ -101,12 +101,26 @@ class RoutePOI {
 
     addRoute(gpx) {
         this.route = new Route(gpx);
-        return this.route._loadGpx()
+        return this.route.load()
             .then(layer => {
                 this.map.addLayer(layer);
                 this.map.fitBounds(layer.getBounds());
                 return layer;
             });
+    }
+
+    clearRoute() {
+        if (this.route === undefined)
+            return;
+
+        this.map.removeLayer(this.route.getLayer());
+        this.types.forEach(type => {
+            type.clearPois();
+            type.updateCounts();
+        });
+        this._removeSearchBoxes();
+        this.clearResultsTable();
+        this.pois = [];
     }
 
     search(radius) {
@@ -179,6 +193,13 @@ class RoutePOI {
         });
     }
 
+    _removeSearchBoxes() {
+        Object.keys(this.search_boxes).forEach(k => {
+            this.map.removeLayer(this.search_boxes[k]);
+        });
+        this.search_boxes = {};
+    }
+
     _renderPoi(poi) {
         let marker = L.marker(poi.position, {
             title: poi.name
@@ -218,7 +239,12 @@ class RoutePOI {
         row.appendChild(distance_cell);
 
         return row;
-
     }
 
+    clearResultsTable() {
+        let tbody = this.results_table.querySelector('tbody');
+        while (tbody.firstChild) {
+            tbody.removeChild(tbody.firstChild);
+        }
+    }
 }

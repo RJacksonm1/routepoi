@@ -28,4 +28,17 @@ class Type {
     hide() {
         this.map.removeLayer(this.layer);
     }
+
+    clearPois() {
+        // `FeatureLayer.SubGroup` doesn't handle `clearLayers` properly. When
+        // we add/remove a `FeatureLayer.SubGroup` its proxying the additions
+        // directly to the marker cluster group, so we need to remove from the
+        // marker cluster group manually before clearing layers.
+
+        let markerClusterLayer = this.layer.getParentGroup();
+        this.layer.eachLayer(layer => {
+            markerClusterLayer.removeLayer(layer);
+        });
+        this.layer.clearLayers();
+    }
 }
