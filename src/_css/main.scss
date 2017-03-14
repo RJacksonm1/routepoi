@@ -38,11 +38,12 @@ $base-asset-url: '/assets/';
   }
 
   &__type__count {
-    &:before {
-      content: '('
+    &::before {
+      content: '(';
     }
-    &:after {
-      content: ')'
+
+    &::after {
+      content: ')';
     }
   }
 }
