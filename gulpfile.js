@@ -36,6 +36,9 @@ var src_paths = {
     'node_modules/url-search-params/build/url-search-params.js',
     'node_modules/leaflet.markercluster/dist/leaflet.markercluster-src.js',
     'node_modules/leaflet.featuregroup.subgroup/dist/leaflet.featuregroup.subgroup-src.js',
+    'node_modules/leaflet-circle-to-polygon/leaflet.circle.topolygon-min.js',         'node_modules/leaflet-routeboxer/src/leaflet-routeboxer.js',
+    'node_modules/whatwg-fetch/fetch.js',
+    src + '_vendor/turf.min.js',
   ],
 
   assets: [

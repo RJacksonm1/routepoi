@@ -2,7 +2,7 @@ class RoutePOI {
     // TODO: There's gotta be a much cleaner way of handing these fars. Options
     // object for the optional ones?
     constructor(mapbox_access_token, enable_marker_cluster, types_src,
-                types_checkboxes, data_provider, results_table, debug) {
+                types_checkboxes, data_provider, results_table, debug, radius) {
 
         // Configuration
         this.mapbox_access_token = mapbox_access_token;
@@ -10,6 +10,7 @@ class RoutePOI {
         this.data_provider = data_provider;
         this.results_table = results_table;
         this.debug = debug || false; // Debug mode: Draws search area bounding boxes
+        this.radius = radius;
 
         // Set up map
         this.map = this._createMap();
@@ -26,6 +27,7 @@ class RoutePOI {
         this.route = undefined;
         this.pois = []; // All POIs found on the above route
         this.search_boxes = {}; // Search box visualisations, if debug is on.
+        this.intersects = []; // Where POIs intersect the route
     }
 
     _createMap() {
@@ -90,12 +92,20 @@ class RoutePOI {
 
     _filterResults(e) {
         this.types.forEach(type => {
+            let resultsRows = document.querySelectorAll('.poi-results-table .type--' + type.name);
+
             if (!type.checkbox.checked) {
                 type.hide();
+                    resultsRows.forEach(row => {
+                    row.style.display = 'none';
+                });
                 return;
             }
 
             type.show();
+            resultsRows.forEach(row => {
+                row.style.display = 'table-row';
+            });
         });
     }
 
@@ -121,12 +131,13 @@ class RoutePOI {
         this._removeSearchBoxes();
         this.clearResultsTable();
         this.pois = [];
+        this.intersects = [];
     }
 
-    search(radius) {
+    search() {
         let search_boxes = L.RouteBoxer.box(
             this.route.polyline,
-            radius
+            this.radius
         );
 
         if (this.debug)
@@ -142,7 +153,7 @@ class RoutePOI {
         });
     }
 
-    _searchBox(box, next) {
+    _searchBox(box) {
         // Doing too much here. Separate out into proper methods.
         return this.data_provider
             .fetch(
@@ -159,6 +170,7 @@ class RoutePOI {
 
                 return data;
             })
+            // TODO: THe following steps aren't part of a "search" job. Clean up.
             .then((pois) => {
                 pois.forEach(this._renderPoi.bind(this));
                 return pois;
@@ -201,42 +213,128 @@ class RoutePOI {
     }
 
     _renderPoi(poi) {
-        let marker = L.marker(poi.position, {
-            title: poi.name
-        });
         let type = this.types.get(poi.type);
-
-        marker.setIcon(type.icon);
-        marker.addTo(
+        poi.marker.setIcon(type.icon);
+        poi.marker.addTo(
             type.layer
         );
 
         return poi;
     }
 
+    findIntersects(results) {
+        // HOT TANGLED MESS OF PROTOTYPING.
+        // Don't read this until I've cleaned it up, ta.
+
+
+        // We're stepping through the route at the search radius divided by pi.
+        // This gives us pretty solid overlap between search radius -- very little area
+        // left excluded.  Probs would be fine diving by half tbh. shrug.
+
+        const route_length = L.GeometryUtil.length(this.route.polyline);
+        const radius_m = this.radius * 1000;
+        const step = radius_m / Math.PI; // Radius in km, we want m
+        let searched_distance = 0;
+
+        // The coords at which we see a given POI.
+        // As soon as we no longer see a POI, we turn these coords into a
+        // POI Intersection and remove them from this list. The Intersection
+        // class can then use this info to find the closest hit.
+        let last_pois_seen = {};
+
+        while (searched_distance < route_length) {
+            let point_ratio = searched_distance / route_length;
+            let point = L.GeometryUtil.interpolateOnLine(
+                this.map,
+                this.route.polyline,
+                point_ratio
+            );
+
+            for (let poi of this.pois) {
+                if (poi.position.distanceTo(point.latLng) > radius_m || searched_distance >= route_length) {
+
+                    // If weve lost track of the POI at this point then this is
+                    // the "last" coord in its segment. Create the intersection
+                    // object now.
+                    if (last_pois_seen.hasOwnProperty(poi.marker._leaflet_id) || searched_distance >= route_length) {
+
+
+                        if (!last_pois_seen.hasOwnProperty(poi.marker._leaflet_id)) {
+                            last_pois_seen[poi.marker._leaflet_id] = {
+                                coords: [],
+                                start_distance: searched_distance,
+                                stop_distance: searched_distance
+                            };
+                        }
+
+                        last_pois_seen[poi.marker._leaflet_id].coords.push(point.latLng);
+                        last_pois_seen[poi.marker._leaflet_id].stop_distance = searched_distance;
+
+                        let poi_intersect = new PointOfInterestRouteIntersection(
+                            poi,
+                            this.map,
+                            this.route,
+                            L.polyline(last_pois_seen[poi.marker._leaflet_id].coords),
+                            last_pois_seen[poi.marker._leaflet_id].start_distance,
+                            last_pois_seen[poi.marker._leaflet_id].stop_distance
+                        );
+                        this.intersects.push(poi_intersect);
+                        delete last_pois_seen[poi.marker._leaflet_id];
+                    }
+
+                    continue;
+                }
+
+                if (!last_pois_seen.hasOwnProperty(poi.marker._leaflet_id)) {
+                    last_pois_seen[poi.marker._leaflet_id] = {
+                        coords: [],
+                        start_distance: searched_distance,
+                        stop_distance: searched_distance
+                    };
+                }
+
+                last_pois_seen[poi.marker._leaflet_id].coords.push(point.latLng);
+                last_pois_seen[poi.marker._leaflet_id].stop_distance = searched_distance;
+            }
+
+            searched_distance += step;
+        }
+
+        // Sort ascending by distance into route
+        this.intersects.sort((a, b) => {
+            return a.getDistance() - b.getDistance();
+        });
+    }
+
     populateResultsTable() {
         let tbody = this.results_table.querySelector('tbody');
 
-        this.pois.forEach(poi => {
-            tbody.appendChild(this._createPoiRow(poi));
+        this.intersects.forEach(intersect => {
+            tbody.appendChild(this._createIntersectRow(intersect));
         });
     }
 
     // Must be a MUCH easier way to do this in ES6? Without resorting to 3rd
     // party libs e.g. handlebars?
-    _createPoiRow(poi) {
+    _createIntersectRow(intersect) {
         let row = document.createElement('tr');
+        row.classList.add('type--' + intersect.poi.type);
+
         let name_cell = document.createElement('td');
-        name_cell.appendChild(document.createTextNode(poi.name));
+        name_cell.appendChild(document.createTextNode(intersect.poi.name));
         row.appendChild(name_cell);
 
         let type_cell = document.createElement('td');
-        type_cell.appendChild(document.createTextNode(poi.type));
+        type_cell.appendChild(document.createTextNode(intersect.poi.type));
         row.appendChild(type_cell);
 
         let distance_cell = document.createElement('td');
-        distance_cell.appendChild(document.createTextNode('TODO'));
+        distance_cell.appendChild(document.createTextNode((intersect.getDistance() / 1000).toFixed(2) + 'km'));
         row.appendChild(distance_cell);
+
+        let diversion_cell = document.createElement('td');
+        diversion_cell.appendChild(document.createTextNode((intersect.getDiversion() / 1000).toFixed(2) + 'km'));
+        row.appendChild(diversion_cell);
 
         return row;
     }

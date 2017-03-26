@@ -1,10 +1,11 @@
 class PointOfInterest {
-    constructor(name, latitude, longitude, type) {
+    constructor(name, position, type) {
         this.name = name;
-        this.position = new L.LatLng(
-            latitude,
-            longitude
-        );
+        this.position = position;
         this.type = type;
+
+        this.marker = L.marker(this.position, {
+            title: this.name
+        });
     }
 }

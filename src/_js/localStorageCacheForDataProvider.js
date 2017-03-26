@@ -27,7 +27,7 @@ class localStorageCacheForDataProvider {
             }
 
             if (cached_item !== null && Date.now() < cached_item.expiry) {
-                return resolve(cached_item.data);
+                return resolve(this.mapResponseToPointOfInterests(cached_item.data));
             }
 
             let xhr = this.data_provider.fetch(latLngBounds, type);
@@ -45,7 +45,20 @@ class localStorageCacheForDataProvider {
 
                     return JSON.parse(localStorage.getItem(item_key)).data;
                 })
+                .then(this.mapResponseToPointOfInterests.bind(this))
                 .then(resolve);
         });
+    }
+
+    mapResponseToPointOfInterests(pois) {
+        return pois.map(this.createPointOfInterest.bind(this));
+    }
+
+    createPointOfInterest(poi) {
+        return new PointOfInterest(
+            poi.name,
+            new L.LatLng(poi.position.lat, poi.position.lng),
+            poi.type
+        );
     }
 }

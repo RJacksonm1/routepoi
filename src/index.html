@@ -17,16 +17,15 @@ types:
 
 ---
 <div class="wrap">
-    <div class="row row--map margin-bh">
-        <div class="column small-12">
-            <div id="route-map" class="map"></div>
-            <div id="google-places-attrib"></div>
-        </div>
-    </div>
     <div class="row row--types margin-bh">
         <div class="column">
             <label for="route">Select a route (GPX)</label>
             <input type="file" name="route" id="route" accept=".gpx"/>
+        </div>
+    </div>
+    <div class="row row--map margin-bh">
+        <div class="column small-12">
+            <div id="route-map" class="map"></div>
         </div>
     </div>
     <div class="row row--types margin-bh">
@@ -56,7 +55,8 @@ types:
                 <thead>
                     <th>Name</th>
                     <th>Type</th>
-                    <th>Distance</th>
+                    <th>Distance into route</th>
+                    <th>Additional distance</th>
                 </thead>
                 <tbody>
 

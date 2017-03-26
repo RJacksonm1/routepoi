@@ -64,8 +64,10 @@ class CycleStreetsDataProvider {
     createPointOfInterest(type, feature) {
         return new PointOfInterest(
             feature.properties.name,
-            feature.geometry.coordinates[1],
-            feature.geometry.coordinates[0],
+            new L.LatLng(
+                feature.geometry.coordinates[1],
+                feature.geometry.coordinates[0]
+            ),
             type
         );
     }
